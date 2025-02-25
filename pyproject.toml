@@ -6,6 +6,9 @@ authors = ["rochacbruno"]
 readme = "README.md"
 packages = [{include = "naomi_core"}]
 
+[tool.poetry.package]
+include = ["llm/py.typed"]
+
 [tool.poetry.dependencies]
 python = "^3.10"
 llm = { git = "https://github.com/reubenjohn/llm_utils.git", rev = "cd875057a68444d8487ceaf4f4ba6bc74c7562be" }

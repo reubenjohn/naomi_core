@@ -1,5 +1,6 @@
 include LICENSE
 include HISTORY.md
 include Containerfile
+include naomi_core/py.typed
 graft tests
 graft naomi_core
