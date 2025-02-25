@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "python_template"
+version = "0.1.0"
+description = ""
+authors = ["rochacbruno"]
+readme = "README.md"
+packages = [{include = "python_template"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+isort = "^5.13.2"
+mypy = "^1.13.0"
+gitchangelog = "^3.0.4"
+mkdocs = "^1.6.1"
+black = "^24.10.0"
+coverage = "^7.6.4"
+flake8 = "^7.1.1"
+pytest-cov = "^6.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+python_template = 'python_template.__main__:main'
+
+[tool.black]
+line-length = 100

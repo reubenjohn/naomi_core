@@ -1,0 +1,24 @@
+site_name: Python Template
+site_description: A python project template
+site_author: Reuben John
+use_directory_urls: false
+theme:
+  name: readthedocs
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - search.highlight
+    - search.share
+
+nav:
+  - Home: index.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - toc:
+      permalink: True
+  - footnotes
+  - codehilite
+  - admonition
