@@ -17,8 +17,8 @@ Some decisions I have made while creating this template are:
  - Low dependency (this template doesn't add dependencies)
 
 ## Post-cloning checklist
-1. Replace all references to "python_template" with your own project name.
-2. Rename directories or packages named "python_template" to match your project's structure.
+1. Replace all references to "naomi_core" with your own project name.
+2. Rename directories or packages named "naomi_core" to match your project's structure.
 3. Update references in LICENSE, README, CONTRIBUTING, or any additional files.
 4. Update any badges or links that reference GitHub repos or code coverage services.
 5. Remove this file if you no longer need the template instructions.
@@ -43,7 +43,7 @@ Lets take a look at the structure of this template:
 ├── Makefile                 # A collection of utilities to manage the project
 ├── MANIFEST.in              # A list of files to include in a package
 ├── mkdocs.yml               # Configuration for documentation site
-├── python_template             # The main python package for the project
+├── naomi_core             # The main python package for the project
 │   ├── base.py              # The base module for the project
 │   ├── __init__.py          # This tells Python that this is a package
 │   ├── __main__.py          # The entry point for the project
@@ -120,7 +120,7 @@ I had to do some tricks to read that version variable inside the setuptools
 I decided to keep the version in a static file because it is easier to read from
 wherever I want without the need to install the package.
 
-e.g: `cat python_template/VERSION` will get the project version without harming
+e.g: `cat naomi_core/VERSION` will get the project version without harming
 with module imports or anything else, it is useful for CI, logs and debugging.
 
 ### Why to include `tests`, `history` and `Containerfile` as part of the release?

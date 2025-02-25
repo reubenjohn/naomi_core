@@ -1,13 +1,20 @@
 [tool.poetry]
-name = "python_template"
+name = "naomi_core"
 version = "0.1.0"
 description = ""
 authors = ["rochacbruno"]
 readme = "README.md"
-packages = [{include = "python_template"}]
+packages = [{include = "naomi_core"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+llm = { git = "https://github.com/reubenjohn/llm_utils.git", rev = "cd875057a68444d8487ceaf4f4ba6bc74c7562be" }
+openai = "^1.54.4"
+python-dotenv = "^1.0.1"
+swarm = { git = "https://github.com/openai/swarm.git", rev = "9db581cecaacea0d46a933d6453c312b034dbf47" }
+instructor = "^1.6.4"
+SQLAlchemy = "^2.0.36"
+Authlib = "^1.4.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -24,9 +31,6 @@ pytest-cov = "^6.0.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-python_template = 'python_template.__main__:main'
 
 [tool.black]
 line-length = 100

@@ -1,13 +1,13 @@
-# python_template
+# naomi_core
 
-[![codecov](https://codecov.io/gh/reubenjohn/python_template/branch/main/graph/badge.svg?token=python_template_token_here)](https://codecov.io/gh/reubenjohn/python_template/branch/main)
-[![CI](https://github.com/reubenjohn/python_template/actions/workflows/main.yml/badge.svg)](https://github.com/reubenjohn/python_template/actions/workflows/main.yml)
+[![codecov](https://codecov.io/gh/reubenjohn/naomi_core/branch/main/graph/badge.svg?token=naomi_core_token_here)](https://codecov.io/gh/reubenjohn/naomi_core/branch/main)
+[![CI](https://github.com/reubenjohn/naomi_core/actions/workflows/main.yml/badge.svg)](https://github.com/reubenjohn/naomi_core/actions/workflows/main.yml)
 
 A template project to help you get started with a new Python project. This template is designed to be modular, simple, and easy to maintain, with a focus on flexibility and low dependency.
 
 ## Introduction
 
-**python_template** is a project template for creating new Python projects. It provides a well-structured project layout, essential configurations, and utilities to streamline the development process. Whether you're building a library, application, or framework, this template offers a solid foundation to start from.
+**naomi_core** is a project template for creating new Python projects. It provides a well-structured project layout, essential configurations, and utilities to streamline the development process. Whether you're building a library, application, or framework, this template offers a solid foundation to start from.
 
 ### **Key Features**
 1. **Modular Structure**: A clean and modular project structure that is easy to navigate and extend.
@@ -31,7 +31,7 @@ A template project to help you get started with a new Python project. This templ
 ├── Makefile                 # A collection of utilities to manage the project
 ├── MANIFEST.in              # A list of files to include in a package
 ├── mkdocs.yml               # Configuration for documentation site
-├── python_template          # The main python package for the project
+├── naomi_core          # The main python package for the project
 │   ├── base.py              # The base module for the project
 │   ├── __init__.py          # This tells Python that this is a package
 │   ├── __main__.py          # The entry point for the project
@@ -61,7 +61,7 @@ For detailed development setup, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 To run the main entry point of the project:
 
 ```bash
-$ poetry run python_template
+$ poetry run naomi_core
 ```
 (See CONTRIBUTING.md for more usage details.)
 

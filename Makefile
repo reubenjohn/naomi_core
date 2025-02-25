@@ -25,28 +25,28 @@ install:          ## Install the project in dev mode.
 
 .PHONY: fmt
 fmt:              ## Format code using black & isort.
-	$(ENV_PREFIX)isort python_template/
-	$(ENV_PREFIX)black python_template/
+	$(ENV_PREFIX)isort naomi_core/
+	$(ENV_PREFIX)black naomi_core/
 	$(ENV_PREFIX)black tests/
 
 .PHONY: lint
 lint:             ## Run pep8, black, mypy linters.
 	@echo $(ENV_PREFIX)
-	$(ENV_PREFIX)flake8 python_template/
-	$(ENV_PREFIX)black --check python_template/
+	$(ENV_PREFIX)flake8 naomi_core/
+	$(ENV_PREFIX)black --check naomi_core/
 	$(ENV_PREFIX)black --check tests/
-	$(ENV_PREFIX)mypy --ignore-missing-imports python_template/
+	$(ENV_PREFIX)mypy --ignore-missing-imports naomi_core/
 
 .PHONY: test
 test: lint        ## Run tests and generate coverage report.
-	xvfb-run $(ENV_PREFIX)pytest -v --cov-config .coveragerc --cov=python_template -l --tb=short --maxfail=1 tests/ || tests_failed=1
+	xvfb-run $(ENV_PREFIX)pytest -v --cov-config .coveragerc --cov=naomi_core -l --tb=short --maxfail=1 tests/ || tests_failed=1
 	$(ENV_PREFIX)coverage xml
 	$(ENV_PREFIX)coverage html
 	exit $$tests_failed
 
 .PHONY: test-headed # Used on machines with a display that doesn't have xvfb setup
 test-headed: lint        ## Run tests and generate coverage report.
-	$(ENV_PREFIX)pytest -v --cov-config .coveragerc --cov=python_template -l --tb=short --maxfail=1 tests/
+	$(ENV_PREFIX)pytest -v --cov-config .coveragerc --cov=naomi_core -l --tb=short --maxfail=1 tests/
 	$(ENV_PREFIX)coverage xml
 	$(ENV_PREFIX)coverage html
 
@@ -75,9 +75,9 @@ clean:            ## Clean unused files.
 release:          ## Create a new tag for release.
 	@echo "WARNING: This operation will create s version tag and push to github"
 	@read -p "Version? (provide the next x.y.z semver) : " TAG
-	@echo "$${TAG}" > python_template/VERSION
+	@echo "$${TAG}" > naomi_core/VERSION
 	@$(ENV_PREFIX)gitchangelog > HISTORY.md
-	@git add python_template/VERSION HISTORY.md
+	@git add naomi_core/VERSION HISTORY.md
 	@git commit -m "release: version $${TAG} 🚀"
 	@echo "creating git tag : $${TAG}"
 	@git tag $${TAG}
