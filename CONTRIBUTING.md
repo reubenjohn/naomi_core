@@ -1,164 +1,82 @@
-# How to develop on naomi_core
+# Contributing to NAOMI Core
 
-**You need PYTHON3!**
+NAOMI Core is a Python package that provides core functionality for LLM-powered assistants. This guide will help you set up your development environment and contribute to the project.
 
-This instructions are for linux base systems. (Linux, MacOS, BSD, etc.)
+**Requirements: Python 3.10+**
 
-## Setting up your own fork of this repo.
+## Setting up your development environment
 
-- On github interface click on `Fork` button.
-- Clone your fork of this repo. `git clone git@github.com:YOUR_GIT_USERNAME/naomi_core.git`
-- Enter the directory `cd naomi_core`
-- Add upstream repo `git remote add upstream https://github.com/reubenjohn/naomi_core`
+1. Fork the repository on GitHub
+2. Clone your fork: `git clone git@github.com:YOUR_USERNAME/naomi_core.git`
+3. Enter the directory: `cd naomi_core`
+4. Install the project: `make install` (uses Poetry)
 
-## Help
+## Development workflow
 
-Run `make help` to see the available make targets.
+1. Create a new branch: `git checkout -b feature/my-feature`
+2. Make your changes
+3. Format the code: `make fmt` (runs isort and black)
+4. Run the linter: `make lint` (runs flake8, black --check, mypy)
+5. Run tests: `make test` (pytest with coverage)
+6. Commit your changes using [conventional commits](https://www.conventionalcommits.org/):
+   - Format: `<type>(<scope>): <description>`
+   - Example: `feat(assistant): add streaming support for agent responses`
+   - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
+7. Push your changes: `git push origin feature/my-feature`
+8. Submit a pull request
 
-## Show the current environment
+## Code standards
 
-Run `make show` to display the current environment information.
+- **Type hints**: Use comprehensive type hints for all functions and methods
+- **Docstrings**: Include docstrings for all public functions, methods, and classes
+- **Testing**: Try to maintain >99% test coverage for all new code and mark intentionally untested code with exclusions
+- **Error handling**: Use explicit exception handling with specific exception types
+- **Formatting**: Code is formatted with Black (100 char line length) and isort
 
-## Install the project in develop mode
+## Useful commands
 
-Run `make install` to install the project using Poetry.
+```bash
+make help              # Show available commands
+make install           # Install the project in development mode
+make fmt               # Format code with isort and black
+make lint              # Run linters (flake8, black --check, mypy)
+make test              # Run tests with coverage report
+make watch             # Run tests on file changes
+make docs              # Build documentation locally
+make clean             # Clean up build artifacts
+```
 
-## IDE reccomendations
+## VS Code setup
 
-### VS Code
-
-#### Install VS Code Extensions
-
-To ensure that you have all the necessary tools for development, install the following VS Code extensions:
-
+Install the following extensions:
 - Python (ms-python.python)
 - Flake8 (ms-python.flake8)
-- MyPy (ms-python.mypy-type-checker)
+- MyPy (ms-python.mypy-type-checker) 
 - Black Formatter (ms-python.black-formatter)
 
-You can install these extensions by searching for them in the Extensions view (`Ctrl+Shift+X`) in VS Code.
-
-#### ExampleVS Code Settings
-Create a `.vscode/settings.json` file in the root of your project with the following content (some of these settings can also be configured using the UI):
-
+Create `.vscode/settings.json`:
 ```json
 {
     "python.analysis.autoImportCompletions": true,
-    "python.testing.unittestArgs": [
-        "-v",
-        "-s",
-        "./tests",
-        "-p",
-        "test_*.py"
-    ],
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
     "flake8.importStrategy": "fromEnvironment",
     "mypy-type-checker.importStrategy": "fromEnvironment",
-    "black-formatter.importStrategy": "fromEnvironment"
+    "black-formatter.importStrategy": "fromEnvironment",
+    "editor.formatOnSave": true,
+    "python.formatting.provider": "black"
 }
 ```
 
-This configuration will set up VS Code to use the appropriate settings for linting, formatting, and testing.
-## Run the tests to ensure everything is working
+## Project architecture
 
-If you are on a headless server, you need xvfb to run GUI tests:
-    # sudo apt install xvfb
-    make test # uses xvfb-run internally
+- **naomi_core/assistant/**: Contains agent functionality and persistence
+- **naomi_core/db.py**: Database connection and session management
+- **tests/**: Mirror the package structure with corresponding test files
 
-If you are on a machine with a display, you can run:
-    make test-headed
+## Making a release
 
-## Create a new branch to work on your contribution
-
-Run `git checkout -b my_contribution`
-
-## Make your changes
-
-Edit the files using your preferred editor. (we recommend VIM or VSCode)
-
-## Format the code
-
-Run `make fmt` to format the code using Black and isort.
-
-## Run the linter
-
-Run `make lint` to run flake8, Black (check mode), and mypy.
-
-## Test your changes
-
-Run `make test` to run the tests.
-
-Ensure code coverage report shows `100%` coverage, add tests to your PR.
-
-## Watch tests
-
-Run `make watch` to run tests on every change.
-
-## Build the docs locally
-
-Run `make docs` to build the documentation.
-
-Ensure your new changes are documented.
-
-## Clean the project
-
-Run `make clean` to remove unused files and directories.
-
-## Commit your changes
-
-This project uses [conventional git commit messages](https://www.conventionalcommits.org/en/v1.0.0/).
-
-Example: `fix(package): update setup.py arguments 🎉` (emojis are fine too)
-
-## Push your changes to your fork
-
-Run `git push origin my_contribution`
-
-## Submit a pull request
-
-On github interface, click on `Pull Request` button.
-
-Wait CI to run and one of the developers will review your PR.
-## Makefile utilities
-
-This project comes with a `Makefile` that contains a number of useful utility.
-
-```bash 
-❯ make
-Usage: make <target>
-
-Targets:
-help:             ## Show the help.
-install:          ## Install the project in dev mode.
-fmt:              ## Format code using black & isort.
-lint:             ## Run pep8, black, mypy linters.
-test: lint        ## Run tests and generate coverage report.
-watch:            ## Run tests on every change.
-clean:            ## Clean unused files.
-release:          ## Create a new tag for release.
-docs:             ## Build the documentation.
-show:             ## Display the current environment information.
-test-headed:      ## Run tests in headed mode.
-```
-
-## Making a new release
-
-This project uses [semantic versioning](https://semver.org/) and tags releases with `X.Y.Z`
-Every time a new tag is created and pushed to the remote repo, github actions will
-automatically create a new release on github and trigger a release on PyPI.
-
-For this to work you need to setup a secret called `PIPY_API_TOKEN` on the project settings>secrets, 
-this token can be generated on [pypi.org](https://pypi.org/account/).
-
-To trigger a new release all you need to do is.
-
-1. If you have changes to add to the repo
-    * Make your changes following the steps described above.
-    * Commit your changes following the [conventional git commit messages](https://www.conventionalcommits.org/en/v1.0.0/).
-2. Run the tests to ensure everything is working.
-4. Run `make release` to create a new tag and push it to the remote repo.
-
-the `make release` will ask you the version number to create the tag, ex: type `0.1.1` when you are asked.
-
-> **CAUTION**:  The make release will change local changelog files and commit all the unstaged changes you have.
+NAOMI Core uses [semantic versioning](https://semver.org/):
+1. Ensure all tests pass and documentation is updated
+2. Run `make release` and specify the new version number
+3. The release process will create a tag and trigger the CI/CD pipeline

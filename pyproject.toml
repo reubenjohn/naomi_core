@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "naomi_core"}]
 
 [tool.poetry.package]
-include = ["llm/py.typed"]
+include = ["naomi_core/py.typed"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
