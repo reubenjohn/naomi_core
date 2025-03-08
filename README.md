@@ -44,8 +44,18 @@ naomi_core/
 ├── assistant/       # Agent and conversation management
 │   ├── agent.py     # Core Agent implementation
 │   └── persistence.py  # Persistence layer for conversations
+├── tools/           # Integration tools for external services
+│   ├── calendar/    # Google Calendar integration
 ├── db.py            # Database connection and session management
 ```
+
+## Available Tools
+
+NAOMI Core includes several integration tools that can be used with your assistant applications:
+
+- **Google Calendar Tool**: Integration with Google Calendar API to fetch events, list calendars, and more
+  
+For more details on available tools, see the [Tools README](naomi_core/tools/README.md).
 
 ## Documentation
 
