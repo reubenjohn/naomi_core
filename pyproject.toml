@@ -17,6 +17,9 @@ instructor = "^1.6.4"
 SQLAlchemy = "^2.0.36"
 Authlib = "^1.4.1"
 psycopg2-binary = "^2.9.10"
+google-api-python-client = "^2.163.0"
+google-auth-httplib2 = "^0.2.0"
+google-auth-oauthlib = "^1.2.1"
 
 
 [tool.poetry.group.dev.dependencies]
