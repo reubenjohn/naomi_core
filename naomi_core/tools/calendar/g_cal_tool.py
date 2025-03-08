@@ -1,15 +1,9 @@
 import datetime
-import os.path
 from typing import Any, Dict, List, Optional
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow  # type: ignore[import]
-from googleapiclient.discovery import build  # type: ignore[import]
 from googleapiclient.errors import HttpError  # type: ignore[import]
 
-# If modifying these scopes, delete the token file.
-SCOPES = ["https://www.googleapis.com/auth/calendar"]
+from naomi_core.tools.calendar.google_auth import authenticate_google_api, DEFAULT_CALENDAR_SCOPES
 
 
 class GoogleCalendarTool:
@@ -29,35 +23,9 @@ class GoogleCalendarTool:
 
     def authenticate(self) -> None:
         """Authenticate with Google Calendar API."""
-        creds = None
-        # The token file stores the user's access and refresh tokens, and is
-        # created automatically when the authorization flow completes for the first time.
-        if os.path.exists(self.token_path):
-            creds = Credentials.from_authorized_user_file(self.token_path, SCOPES)
-
-        # If there are no (valid) credentials available, let the user log in.
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                if not os.path.exists(self.credentials_path):
-                    raise FileNotFoundError(
-                        f"Credentials file not found at: {self.credentials_path}"
-                    )
-
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    self.credentials_path,
-                    SCOPES,
-                )
-                creds = flow.run_local_server(port=0)
-
-            # Save the credentials for the next run
-            # Ensure the directory exists
-            os.makedirs(os.path.dirname(os.path.abspath(self.token_path)), exist_ok=True)
-            with open(self.token_path, "w") as token:
-                token.write(creds.to_json())
-
-        self.service = build("calendar", "v3", credentials=creds)
+        self.service = authenticate_google_api(
+            self.credentials_path, self.token_path, "calendar", "v3", DEFAULT_CALENDAR_SCOPES
+        )
 
     def get_upcoming_events(
         self, max_results: int = 10, calendar_id: str = "primary"
