@@ -1,4 +1,4 @@
-from naomi_core.db import Message, MessageModel
+from naomi_core.db.chat import Message, MessageModel
 
 
 def message_data_1() -> Message:

@@ -1,19 +1,21 @@
 import json
 from unittest.mock import patch
-from naomi_core.db import (
-    Base,
+from naomi_core.db.core import Base, initialize_db, session_scope, get_all_tables
+from naomi_core.db.chat import (
     Message,
     MessageModel,
     delete_messages_after,
     fetch_messages,
-    initialize_db,
-    save_agent_goal,
     add_message_to_db,
+    Conversation,
+    SummaryModel,
+)
+from naomi_core.db.agent import (
+    save_agent_goal,
     AgentGoalModel,
     load_goals_from_db,
-    session_scope,
 )
-from naomi_core.db import Conversation, SummaryModel, PropertyModel, get_all_tables
+from naomi_core.db.property import PropertyModel
 
 from tests.conftest import engine, TestingSessionLocal
 from tests.matchers import assert_message_model
@@ -55,7 +57,7 @@ def test_message_body_property():
     assert message["content"] == "New content"
 
 
-@patch("naomi_core.db.engine", new_callable=lambda: engine)
+@patch("naomi_core.db.core.engine", new_callable=lambda: engine)
 def test_initialize_db_and_get_all_tables(_):
     Base.metadata.drop_all(bind=engine)
     assert [] == get_all_tables()
@@ -111,18 +113,20 @@ def test_delete_messages(
 
 
 def test_save_and_load_agent_goal(db_session):
+    goals = load_goals_from_db(db_session)
+    assert [g.name for g in goals] == []
+
     new_goal = AgentGoalModel(
         name="SaveGoal", description="Testing save", completed=False, persistence="temp"
     )
     save_agent_goal(new_goal)
-    db_session.commit()
-    goals = load_goals_from_db()
+    goals = load_goals_from_db(db_session)
     assert [g.name for g in goals] == ["SaveGoal"]
 
     goal = AgentGoalModel(name="TestGoal", description="Test", completed=False, persistence="temp")
     db_session.add(goal)
     db_session.commit()
-    goals = load_goals_from_db()
+    goals = load_goals_from_db(db_session)
     assert any(g.name == "TestGoal" for g in goals)
 
 
@@ -143,7 +147,7 @@ def test_create_and_query_models(db_session):
     assert saved_prop.value == "testValue"
 
 
-@patch("naomi_core.db.Session", new_callable=lambda: TestingSessionLocal)
+@patch("naomi_core.db.core.Session", new_callable=lambda: TestingSessionLocal)
 def test_session_scope(mock_session):
     with session_scope() as session:
         assert session is not None
@@ -156,7 +160,7 @@ def test_session_scope(mock_session):
         assert saved_convo.description == "A test conversation"
 
 
-@patch("naomi_core.db.Session", new_callable=lambda: TestingSessionLocal)
+@patch("naomi_core.db.core.Session", new_callable=lambda: TestingSessionLocal)
 def test_session_scope_commit(mock_session, db_session):
     with session_scope() as session:
         assert session is not None
@@ -167,7 +171,7 @@ def test_session_scope_commit(mock_session, db_session):
     assert saved_convo.description == "A test conversation"
 
 
-@patch("naomi_core.db.Session", new_callable=lambda: TestingSessionLocal)
+@patch("naomi_core.db.core.Session", new_callable=lambda: TestingSessionLocal)
 def test_session_scope_rollback(mock_session):
     try:
         with session_scope() as session:

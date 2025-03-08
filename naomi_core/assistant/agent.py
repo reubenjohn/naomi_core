@@ -5,7 +5,7 @@ from llm.llm import handle_base_model_arg, llm_client
 from llm.stream_processing import MessageStream, ToolStream, parse_streaming_response
 from swarm import Agent  # type: ignore[import]
 
-from naomi_core.db import Message
+from naomi_core.db.chat import Message
 
 
 def generate_llm_response(messages: list[Message], model: Optional[str] = None) -> Iterator[str]:

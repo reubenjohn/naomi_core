@@ -1,6 +1,6 @@
 from itertools import zip_longest
 from sqlalchemy.exc import NoResultFound
-from naomi_core.db import MessageModel
+from naomi_core.db.chat import MessageModel
 
 
 class InstanceOf:

@@ -5,12 +5,12 @@ from unittest.mock import patch
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from naomi_core.db import (
+from naomi_core.db.chat import (
     Base,
     Message,
     MessageModel,
 )
-from naomi_core.db import get_all_tables
+from naomi_core.db.core import get_all_tables
 from tests.data import message_data_1, message_data_2, message_model_1, message_model_2
 
 os.environ["OPENAI_BASE_URL"] = ""
@@ -36,36 +36,38 @@ def in_memory_session():
 def test_db():
     """Creates a new database for each test case."""
 
-    with patch("naomi_core.db.engine", new_callable=lambda: engine):
+    with patch("naomi_core.db.core.engine", new_callable=lambda: engine):
+        Base.metadata.drop_all(bind=engine)
         assert get_all_tables() == []
 
     Base.metadata.create_all(bind=engine)
-    # raise ValueError("Correct")
     yield
     Base.metadata.drop_all(bind=engine)
 
-    with patch("naomi_core.db.engine", new_callable=lambda: engine):
+    with patch("naomi_core.db.core.engine", new_callable=lambda: engine):
         assert get_all_tables() == []
 
 
 @pytest.fixture(scope="function")
-def db_session():
+def db_session(test_db):
     session = TestingSessionLocal()
-    yield session
-    session.rollback()
-    session.close()
-
-
-@pytest.fixture(scope="function", autouse=True)
-def patched_session_scope(test_db, db_session):
-    """Fixture to patch session_scope so it returns the test database session."""
 
     @contextmanager
     def mock_session_scope():
-        yield db_session  # Return the test session
+        try:
+            yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
-    with patch("naomi_core.db.session_scope", side_effect=mock_session_scope):
-        yield  # Ensures patch is applied for the duration of the test
+    with patch("naomi_core.db.core.session_scope", side_effect=mock_session_scope):
+        yield session
+
+    session.rollback()
+    session.close()
 
 
 @pytest.fixture(scope="function")

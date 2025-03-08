@@ -1,16 +1,8 @@
-from contextlib import contextmanager
 import json
-import os
-from typing import Any
-from sqlalchemy import DateTime, create_engine, Column, Integer, String, Text, Boolean, func, text
-from sqlalchemy.orm import sessionmaker, declarative_base
 
+from naomi_core.db.core import Base
 
-DB_PATH = os.environ.get("DB_PATH", "sqlite:///db.sqlite")
-
-Base: Any = declarative_base()
-engine = create_engine(DB_PATH)
-Session = sessionmaker(bind=engine)
+from sqlalchemy import Column, Integer, String, Text, func
 
 
 class Message(dict[str, str]):
@@ -39,19 +31,6 @@ class Message(dict[str, str]):
 
 
 DEFAULT_CONVERSATION_ID = 0
-
-
-@contextmanager
-def session_scope():
-    session = Session()
-    try:
-        yield session
-        session.commit()
-    except Exception:
-        session.rollback()
-        raise
-    finally:
-        session.close()
 
 
 class Conversation(Base):
@@ -86,35 +65,6 @@ class SummaryModel(Base):
     content = Column(Text, nullable=False)
 
 
-class AgentGoalModel(Base):
-    __tablename__ = "agent_goal"
-    name = Column(String, primary_key=True, nullable=False)
-    description = Column(Text, nullable=False)
-    completed = Column(Boolean, nullable=False)
-    persistence = Column(Text, nullable=False)
-
-
-class PropertyModel(Base):
-    __tablename__ = "property"
-    key = Column(String, primary_key=True, nullable=False)
-    value = Column(Text, nullable=False)
-
-
-class WebhookEvent(Base):
-    __tablename__ = "event"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    event_type = Column(String, nullable=False)
-    payload = Column(Text, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    status = Column(String, nullable=False, server_default="NEW")
-
-
-# Database setup
-def initialize_db():
-    Base.metadata.create_all(engine)
-
-
-# Save message to database
 def add_message_to_db(message: Message, session, conversation_id: int) -> MessageModel:
     max_id = (
         session.query(func.max(MessageModel.id))
@@ -146,19 +96,3 @@ def delete_messages_after(session, message: MessageModel):
         MessageModel.conversation_id == message.conversation_id
     ).where(MessageModel.id >= message.id).delete()
     session.commit()
-
-
-def save_agent_goal(goal: AgentGoalModel):
-    with session_scope() as session:
-        session.add(goal)
-
-
-def load_goals_from_db() -> list[AgentGoalModel]:
-    with session_scope() as session:
-        return session.query(AgentGoalModel).order_by(AgentGoalModel.name).all()
-
-
-def get_all_tables():
-    with engine.connect() as connection:
-        result = connection.execute(text("SELECT name, sql FROM sqlite_master WHERE type='table';"))
-        return [(name, sql) for name, sql in result]
