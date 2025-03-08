@@ -1,6 +1,6 @@
 import datetime
 import os.path
-from typing import List, Dict, Any
+from typing import Any, Dict, List, Optional
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -9,7 +9,7 @@ from googleapiclient.discovery import build  # type: ignore[import]
 from googleapiclient.errors import HttpError  # type: ignore[import]
 
 # If modifying these scopes, delete the token file.
-SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
+SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 
 class GoogleCalendarTool:
@@ -184,3 +184,157 @@ class GoogleCalendarTool:
         """
         start = event["start"].get("dateTime", event["start"].get("date"))
         return start
+
+    def create_event(
+        self,
+        summary: str,
+        start_time: datetime.datetime,
+        end_time: datetime.datetime,
+        description: str = "",
+        location: str = "",
+        attendees: Optional[List[Dict[str, str]]] = None,
+        calendar_id: str = "primary",
+        timezone: str = "UTC",
+    ) -> Dict[str, Any]:
+        """
+        Create a new event in the calendar.
+
+        Args:
+            summary: Title of the event
+            start_time: Start time of the event
+            end_time: End time of the event
+            description: Description of the event
+            location: Location of the event
+            attendees: List of attendees, each a dict with at least 'email' key
+            calendar_id: Calendar ID to add event to (default: primary)
+            timezone: Timezone for the event times
+
+        Returns:
+            Created event object
+        """
+        if not self.service:
+            self.authenticate()
+
+        if attendees is None:
+            attendees = []
+
+        event_body: Dict[str, Any] = {
+            "summary": summary,
+            "location": location,
+            "description": description,
+            "start": {
+                "dateTime": start_time.isoformat(),
+                "timeZone": timezone,
+            },
+            "end": {
+                "dateTime": end_time.isoformat(),
+                "timeZone": timezone,
+            },
+        }
+
+        if attendees:
+            event_body["attendees"] = attendees.copy()
+
+        try:
+            event = self.service.events().insert(calendarId=calendar_id, body=event_body).execute()
+
+            return event
+        except HttpError as error:
+            raise Exception(f"An error occurred while creating the event: {error}")
+
+    def update_event(
+        self,
+        event_id: str,
+        summary: Optional[str] = None,
+        start_time: Optional[datetime.datetime] = None,
+        end_time: Optional[datetime.datetime] = None,
+        description: Optional[str] = None,
+        location: Optional[str] = None,
+        attendees: Optional[List[Dict[str, str]]] = None,
+        calendar_id: str = "primary",
+        timezone: str = "UTC",
+    ) -> Dict[str, Any]:
+        """
+        Update an existing event in the calendar.
+
+        Args:
+            event_id: ID of the event to update
+            summary: New title of the event
+            start_time: New start time of the event
+            end_time: New end time of the event
+            description: New description of the event
+            location: New location of the event
+            attendees: New list of attendees, each a dict with at least 'email' key
+            calendar_id: Calendar ID the event belongs to (default: primary)
+            timezone: Timezone for the event times
+
+        Returns:
+            Updated event object
+        """
+        if not self.service:
+            self.authenticate()
+
+        # First get the existing event
+        try:
+            event: Dict[str, Any] = (
+                self.service.events().get(calendarId=calendar_id, eventId=event_id).execute()
+            )
+
+            # Update fields if provided
+            if summary is not None:
+                event["summary"] = summary
+
+            if description is not None:
+                event["description"] = description
+
+            if location is not None:
+                event["location"] = location
+
+            if start_time is not None:
+                event["start"] = {
+                    "dateTime": start_time.isoformat(),
+                    "timeZone": timezone,
+                }
+
+            if end_time is not None:
+                event["end"] = {
+                    "dateTime": end_time.isoformat(),
+                    "timeZone": timezone,
+                }
+
+            if attendees is not None:
+                event["attendees"] = attendees.copy()
+
+            # Update the event
+            updated_event = (
+                self.service.events()
+                .update(calendarId=calendar_id, eventId=event_id, body=event)
+                .execute()
+            )
+
+            return updated_event
+
+        except HttpError as error:
+            raise Exception(f"An error occurred while updating the event: {error}")
+
+    def delete_event(self, event_id: str, calendar_id: str = "primary") -> bool:
+        """
+        Delete an event from the calendar.
+
+        Args:
+            event_id: ID of the event to delete
+            calendar_id: Calendar ID the event belongs to (default: primary)
+
+        Returns:
+            True if successful
+        """
+        if not self.service:
+            self.authenticate()
+
+        try:
+            self.service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
+
+            return True
+
+        except HttpError as error:
+            raise Exception(f"An error occurred while deleting the event: {error}")

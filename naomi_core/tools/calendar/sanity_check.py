@@ -1,6 +1,6 @@
+import argparse
 import datetime
 import os.path
-import argparse
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials

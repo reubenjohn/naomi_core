@@ -4,12 +4,7 @@ from typing import Callable, Iterator
 from sqlalchemy import Column
 
 from naomi_core.assistant.agent import generate_llm_response, process_llm_response
-from naomi_core.db import (
-    MessageModel,
-    add_message_to_db,
-    delete_messages_after,
-    fetch_messages,
-)
+from naomi_core.db import MessageModel, add_message_to_db, delete_messages_after, fetch_messages
 
 
 def persist_llm_response(message: MessageModel, session):
