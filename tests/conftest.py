@@ -10,8 +10,19 @@ from naomi_core.db.chat import (
     Message,
     MessageModel,
 )
+from naomi_core.db.agent import AgentModel, AgentResponsibilityModel
 from naomi_core.db.core import get_all_tables
-from tests.data import message_data_1, message_data_2, message_model_1, message_model_2
+from tests.data import (
+    message_data_1,
+    message_data_2,
+    message_model_1,
+    message_model_2,
+    agent_model_1,
+    agent_model_2,
+    lead_agent_model,
+    agent_responsibility_1,
+    agent_responsibility_2,
+)
 
 os.environ["OPENAI_BASE_URL"] = ""
 os.environ["OPENAI_API_KEY"] = ""
@@ -96,6 +107,56 @@ def persist_messages(db_session, message1: MessageModel, message2: MessageModel)
     db_session.add(message2)
     db_session.commit()
     return message1, message2
+
+
+@pytest.fixture(scope="function")
+def test_agent() -> AgentModel:
+    return agent_model_1()
+
+
+@pytest.fixture(scope="function")
+def another_agent() -> AgentModel:
+    return agent_model_2()
+
+
+@pytest.fixture(scope="function")
+def test_lead_agent() -> AgentModel:
+    return lead_agent_model()
+
+
+@pytest.fixture(scope="function")
+def test_responsibility() -> AgentResponsibilityModel:
+    return agent_responsibility_1()
+
+
+@pytest.fixture(scope="function")
+def another_responsibility() -> AgentResponsibilityModel:
+    return agent_responsibility_2()
+
+
+@pytest.fixture(scope="function")
+def persist_agent(db_session, test_agent):
+    db_session.add(test_agent)
+    db_session.commit()
+    return test_agent
+
+
+@pytest.fixture(scope="function")
+def persist_agents(db_session, test_agent, another_agent):
+    db_session.add(test_agent)
+    db_session.add(another_agent)
+    db_session.commit()
+    return test_agent, another_agent
+
+
+@pytest.fixture(scope="function")
+def persist_responsibilities(
+    db_session, persist_agent, test_responsibility, another_responsibility
+):
+    db_session.add(test_responsibility)
+    db_session.add(another_responsibility)
+    db_session.commit()
+    return test_responsibility, another_responsibility
 
 
 @pytest.fixture

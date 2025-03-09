@@ -1,6 +1,7 @@
 import json
+from contextlib import contextmanager
 from unittest.mock import patch
-from naomi_core.db.core import Base, initialize_db, session_scope, get_all_tables
+from naomi_core.db.core import Base, initialize_db, session_scope, get_all_tables, wipe_db
 from naomi_core.db.chat import (
     Message,
     MessageModel,
@@ -11,9 +12,13 @@ from naomi_core.db.chat import (
     SummaryModel,
 )
 from naomi_core.db.agent import (
-    save_agent_goal,
-    AgentGoalModel,
-    load_goals_from_db,
+    AgentModel,
+    AgentResponsibilityModel,
+    get_all_agents,
+    get_lead_agent,
+    save_responsibility,
+    load_responsibilities_from_db,
+    LEAD_DEFAULT_PROMPT,
 )
 from naomi_core.db.property import PropertyModel
 
@@ -62,9 +67,40 @@ def test_initialize_db_and_get_all_tables(_):
     Base.metadata.drop_all(bind=engine)
     assert [] == get_all_tables()
     initialize_db()
-    assert {"conversation", "message", "summary", "agent_goal", "property", "event"} == {
-        t[0] for t in get_all_tables()
-    }
+    assert {
+        "conversation",
+        "message",
+        "summary",
+        "agent",
+        "agent_responsibility",
+        "property",
+        "event",
+    } == {t[0] for t in get_all_tables()}
+
+
+def test_wipe_db(db_session):
+    # First initialize the database with patched engine
+    with patch("naomi_core.db.core.engine", new_callable=lambda: engine):
+        # Initialize
+        initialize_db()
+        assert len(get_all_tables()) > 0
+
+        # Add some data
+        agent = AgentModel(name="TestAgent", prompt="Test prompt")
+        db_session.add(agent)
+        db_session.commit()
+
+        # Now wipe the database and check it reinitializes correctly
+        wipe_db()
+
+        # Verify tables exist but previous data is gone
+        agent_count = db_session.query(AgentModel).count()
+        assert agent_count == 0
+
+        # Verify all tables still exist
+        tables = {t[0] for t in get_all_tables()}
+        assert "agent" in tables
+        assert "agent_responsibility" in tables
 
 
 def test_add_message(db_session, message_data: Message):
@@ -112,22 +148,95 @@ def test_delete_messages(
     assert messages[0].payload == message_data
 
 
-def test_save_and_load_agent_goal(db_session):
-    goals = load_goals_from_db(db_session)
-    assert [g.name for g in goals] == []
+def test_agent_model_and_get_lead_agent(db_session):
+    # Test get_lead_agent with empty DB
+    lead_agent = get_lead_agent(db_session)
+    assert lead_agent.name == "👑Lead"
+    assert lead_agent.prompt == LEAD_DEFAULT_PROMPT
 
-    new_goal = AgentGoalModel(
-        name="SaveGoal", description="Testing save", completed=False, persistence="temp"
-    )
-    save_agent_goal(new_goal)
-    goals = load_goals_from_db(db_session)
-    assert [g.name for g in goals] == ["SaveGoal"]
+    # Verify that lead agent was saved to DB
+    saved_agent = db_session.query(AgentModel).filter_by(name="👑Lead").one()
+    assert saved_agent.name == "👑Lead"
+    assert saved_agent.prompt == LEAD_DEFAULT_PROMPT
 
-    goal = AgentGoalModel(name="TestGoal", description="Test", completed=False, persistence="temp")
-    db_session.add(goal)
+    # Update lead agent prompt
+    lead_agent.prompt = "Updated prompt"
     db_session.commit()
-    goals = load_goals_from_db(db_session)
-    assert any(g.name == "TestGoal" for g in goals)
+
+    # Verify updated prompt is retrieved
+    updated_lead = get_lead_agent(db_session)
+    assert updated_lead.prompt == "Updated prompt"
+
+
+def test_get_all_agents_empty_db(db_session):
+    # Test with empty DB - should create lead agent
+    agents = get_all_agents(db_session)
+    assert len(agents) == 1
+    assert agents[0].name == "👑Lead"
+
+
+def test_get_all_agents_with_existing_agents(db_session, persist_agents):
+    test_agent, another_agent = persist_agents
+
+    # Add lead agent explicitly
+    lead_agent = AgentModel(name="👑Lead", prompt="I am the lead")
+    db_session.add(lead_agent)
+    db_session.commit()
+
+    # Test with existing agents
+    agents = get_all_agents(db_session)
+    assert len(agents) == 3
+    agent_names = {agent.name for agent in agents}
+    assert "👑Lead" in agent_names
+    assert test_agent.name in agent_names
+    assert another_agent.name in agent_names
+
+
+def test_save_and_load_responsibilities_empty(db_session, persist_agent):
+    # Test load with empty DB
+    responsibilities = load_responsibilities_from_db(persist_agent, db_session)
+    assert len(responsibilities) == 0
+
+
+def test_save_responsibility(db_session, test_agent, test_responsibility):
+    # Add the agent directly to the session
+    db_session.add(test_agent)
+    db_session.commit()
+
+    # Use mocked session scope for save_responsibility
+    with patch("naomi_core.db.core.session_scope") as mock_scope:
+
+        @contextmanager
+        def mock_session_fn():
+            try:
+                yield db_session
+                db_session.commit()
+            except Exception:
+                db_session.rollback()
+                raise
+
+        mock_scope.side_effect = mock_session_fn
+
+        # Add a responsibility
+        save_responsibility(test_responsibility)
+
+    # Verify responsibility was saved
+    responsibilities = load_responsibilities_from_db(test_agent, db_session)
+    assert len(responsibilities) == 1
+    assert responsibilities[0].name == test_responsibility.name
+    assert responsibilities[0].description == test_responsibility.description
+
+
+def test_load_responsibilities_ordering(db_session, persist_agent, persist_responsibilities):
+    test_responsibility, another_responsibility = persist_responsibilities
+
+    # Verify both responsibilities are returned in correct order
+    responsibilities = load_responsibilities_from_db(persist_agent, db_session)
+    assert len(responsibilities) == 2
+
+    # In alphabetical order
+    assert responsibilities[0].name == another_responsibility.name
+    assert responsibilities[1].name == test_responsibility.name
 
 
 def test_create_and_query_models(db_session):
