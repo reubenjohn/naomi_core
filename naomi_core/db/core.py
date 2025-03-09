@@ -28,9 +28,17 @@ def session_scope():
 
 # Database setup
 def initialize_db():
-    from naomi_core.db.webhook import WebhookEvent  # noqa
+    import naomi_core.db.agent  # noqa
+    import naomi_core.db.chat  # noqa
+    import naomi_core.db.property  # noqa
+    import naomi_core.db.webhook  # noqa
 
     Base.metadata.create_all(engine)
+
+
+def wipe_db():
+    Base.metadata.drop_all(engine)
+    initialize_db()
 
 
 # Save message to database
