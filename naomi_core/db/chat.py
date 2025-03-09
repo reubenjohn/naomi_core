@@ -1,8 +1,8 @@
 import json
 
-from naomi_core.db.core import Base
-
 from sqlalchemy import Column, Integer, String, Text, func
+
+from naomi_core.db.core import Base
 
 
 class Message(dict[str, str]):

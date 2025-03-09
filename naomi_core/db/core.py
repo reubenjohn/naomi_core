@@ -5,7 +5,6 @@ from typing import Any
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-
 DB_PATH = os.environ.get("DB_PATH", "sqlite:///db.sqlite")
 
 Base: Any = declarative_base()

@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from googleapiclient.errors import HttpError  # type: ignore[import]
 
-from naomi_core.tools.calendar.google_auth import authenticate_google_api, DEFAULT_CALENDAR_SCOPES
+from naomi_core.tools.calendar.google_auth import DEFAULT_CALENDAR_SCOPES, authenticate_google_api
 
 
 class GoogleCalendarTool:

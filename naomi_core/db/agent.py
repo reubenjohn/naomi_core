@@ -1,7 +1,6 @@
-from naomi_core.db.core import Base
-
-
 from sqlalchemy import Column, ForeignKey, String, Text
+
+from naomi_core.db.core import Base
 
 
 class AgentModel(Base):
