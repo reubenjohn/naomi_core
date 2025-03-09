@@ -1,8 +1,10 @@
+import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
-DATABASE_URL = (
-    "postgresql://postgres:FlzhEhNthoWdeeNVSyZwqsRDoBQTdxCJ@yamanote.proxy.rlwy.net:17778/railway"
-)
+load_dotenv()
+
+DATABASE_URL = os.environ["DATABASE_URL"]
 engine = create_engine(DATABASE_URL)
 
 # Create a table
